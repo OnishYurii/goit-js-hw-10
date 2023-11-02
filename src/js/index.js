@@ -1,21 +1,41 @@
-import { fetchBreeds } from './cat-api';
-import { fetchCatByBreed } from './cat-api';
+import { fetchBreeds, fetchCatByBreed } from './cat-api';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
-const select = document.querySelector('.breed-select');
+export const select = document.querySelector('.breed-select');
 const div = document.querySelector('.cat-info');
+export const loader = document.querySelector('.loader');
 
 fetchBreeds()
-  .then(breeds => renderSelect(breeds))
-  .catch(error => console.log(error));
+  .then(breeds => {
+    renderSelect(breeds);
+    loader.classList.add('is-hidden');
+    select.classList.remove('is-hidden');
+  })
+  .catch(error => {
+    select.classList.add('is-hidden');
+    div.classList.add('is-hidden');
+    loader.classList.add('is-hidden');
+    Notify.failure('Oops! Something went wrong! Try reloading the page!');
+    console.log(error);
+  });
 
 select.addEventListener('input', e => {
   e.preventDefault();
+  div.classList.add('is-hidden');
+  loader.classList.remove('is-hidden');
   const breedId = select.options[select.selectedIndex].value;
   fetchCatByBreed(breedId)
     .then(cat => {
       renderCat(cat);
+      loader.classList.add('is-hidden');
+      div.classList.remove('is-hidden');
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      div.classList.add('is-hidden');
+      loader.classList.add('is-hidden');
+      Notify.failure('Oops! Something went wrong! Try reloading the page!');
+      console.log(err);
+    });
 });
 
 function renderSelect(breeds) {
